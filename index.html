@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Segundo Reinado</title>
+  <style>
+    * {box-sizing:border-box;font-family:"Segoe UI",Tahoma,Arial,sans-serif;margin:0;padding:0}
+    body {background:#f5f5f5;color:#333;}
+    header {background:#004d7a;color:#fff;padding:20px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,0.3)}
+    header h1 {margin-bottom:8px;font-size:24px;}
+    header p {font-size:14px;opacity:0.9}
+
+    .container {max-width:900px;margin:20px auto;padding:20px;}
+
+    .quiz-box {background:#fff;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,0.15);padding:20px;margin-bottom:20px;}
+    .quiz-header {display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+    .quiz-header .score,.quiz-header .timer {font-weight:bold;color:#004d7a}
+
+    #question {font-size:18px;margin-bottom:15px;font-weight:bold;}
+    #image {width:100%;max-height:200px;object-fit:cover;margin-bottom:15px;border-radius:8px}
+
+    .choices {display:grid;gap:10px;}
+    .choice {padding:12px;border:2px solid #004d7a;border-radius:6px;background:#fff;cursor:pointer;transition:all 0.2s;}
+    .choice:hover {background:#004d7a;color:#fff}
+
+    .result {margin-top:15px;padding:10px;border-radius:6px;font-weight:bold;text-align:center}
+    .good {background:#d1fae5;color:#065f46}
+    .bad {background:#fee2e2;color:#991b1b}
+
+    .controls {margin-top:15px;display:flex;gap:10px;}
+    .btn {flex:1;padding:10px;border:none;border-radius:6px;cursor:pointer;font-weight:bold;transition:0.2s}
+    .btn-primary {background:#004d7a;color:#fff}
+    .btn-primary:hover {background:#0066a1}
+    .btn-secondary {background:#e5e7eb;color:#111}
+    .btn-secondary:hover {background:#d1d5db}
+
+    aside {background:#fff;padding:15px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+    aside h2 {font-size:16px;margin-bottom:10px;color:#004d7a}
+    .timeline {display:flex;flex-wrap:wrap;gap:10px}
+    .event {padding:8px 10px;border-radius:6px;background:#f1f5f9;cursor:pointer;transition:0.2s}
+    .event:hover {background:#cbd5e1}
+
+    #summary {margin-top:10px;font-size:14px;color:#333;background:#f9fafb;padding:10px;border-radius:6px;}
+
+    #finalRanking {display:none;text-align:center;background:#fff;padding:20px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.15);margin-top:20px;}
+    #finalRanking h2 {color:#004d7a;margin-bottom:10px;}
+
+    footer {text-align:center;margin:20px 0;color:#555;font-size:14px}
+    @media(max-width:768px){
+      .quiz-header{flex-direction:column;align-items:flex-start;gap:10px;}
+      .controls{flex-direction:column}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Quiz: Segundo Reinado</h1>
+    <p>Teste seus conhecimentos sobre o Brasil no período de Dom Pedro II (1840–1889).</p>
+  </header>
+
+  <div class="container">
+    <section class="quiz-box" id="quizBox">
+      <div class="quiz-header">
+        <div>Pergunta:</div>
+        <div class="score">Pontuação: <span id="score">0</span></div>
+        <div class="timer">Tempo: <span id="timer">20</span>s</div>
+      </div>
+      <img id="image" src="" alt="Imagem ilustrativa" />
+      <div id="question">Carregando...</div>
+      <div class="choices" id="choices"></div>
+      <div id="feedback" class="result"></div>
+      <div class="controls">
+        <button id="nextBtn" class="btn btn-primary">Pular</button>
+        <button id="showAnswerBtn" class="btn btn-secondary">Mostrar resposta (-2 pts)</button>
+        <button id="restartBtn" class="btn btn-secondary">Reiniciar</button>
+        <button id="endBtn" class="btn btn-secondary">Finalizar</button>
+      </div>
+    </section>
+
+    <section id="finalRanking">
+      <h2>Ranking Final</h2>
+      <p>Sua pontuação: <span id="finalScore">0</span></p>
+    </section>
+
+    <aside>
+      <h2>Linha do Tempo</h2>
+      <div class="timeline" id="timeline"></div>
+      <div id="summary"></div>
+    </aside>
+  </div>
+
+  <footer>
+    Participantes: Jean, Gabriela Barbosa e Estella
+  </footer>
+  <footer>
+    Professora: Carla
+  </footer>
+
+  <script>
+    const questionsBase = [
+      {q:'Em que ano Dom Pedro II foi coroado imperador?',a:'1841',opts:['1831','1841','1850','1865'],img:'https://upload.wikimedia.org/wikipedia/commons/4/4f/D_Pedro_II_do_Brasil_-_coroa%C3%A7%C3%A3o.jpg'},
+      {q:'Qual foi a principal regra do Ato Adicional (1834)?',a:'províncias ganharam mais autonomia',opts:['centralização do poder','fim do poder local','províncias ganharam mais autonomia','voto direto obrigatório'],img:'https://upload.wikimedia.org/wikipedia/commons/2/2e/Constitui%C3%A7%C3%A3o_do_Imp%C3%A9rio_do_Brasil_de_1824.jpg'},
+      {q:'Quem foi o líder abolicionista famoso pelas campanhas?',a:'Joaquim Nabuco',opts:['Zumbi dos Palmares','Joaquim Nabuco','Rui Barbosa','José Bonifácio'],img:'https://upload.wikimedia.org/wikipedia/commons/3/39/Joaquim_Nabuco.jpg'},
+      {q:'Que lei de 1871 protegia filhos de escravas?',a:'Lei do Ventre Livre',opts:['Lei Áurea','Lei do Ventre Livre','Lei Eusébio de Queirós','Lei Saraiva'],img:'https://upload.wikimedia.org/wikipedia/commons/1/1c/Lei_do_Ventre_Livre.jpg'},
+      {q:'Que lei de 1850 acabou com o tráfico de escravos?',a:'Lei Eusébio de Queirós',opts:['Lei do Ventre Livre','Lei Eusébio de Queirós','Lei Áurea','Código Civil'],img:'https://upload.wikimedia.org/wikipedia/commons/0/09/Eus%C3%A9bio_de_Queir%C3%B3s.jpg'},
+      {q:'Ano da assinatura da Lei Áurea?',a:'1888',opts:['1878','1880','1888','1890'],img:'https://upload.wikimedia.org/wikipedia/commons/8/8c/Princess_Isabel_of_Brazil.jpg'},
+      {q:'Como era chamada a constituição do período imperial?',a:'Constituição de 1824',opts:['Constituição de 1824','Ato Adicional','Lei Áurea','Tratado de Tordesilhas'],img:'https://upload.wikimedia.org/wikipedia/commons/2/2e/Constitui%C3%A7%C3%A3o_do_Imp%C3%A9rio_do_Brasil_de_1824.jpg'},
+      {q:'Quem governava durante o Segundo Reinado?',a:'Dom Pedro II',opts:['Dom Pedro I','Dom Pedro II','Dom João VI','Dom Luís'],img:'https://upload.wikimedia.org/wikipedia/commons/b/bc/Emperor_Pedro_II_of_Brazil_-_1876.jpg'},
+      {q:'Que movimento em 1889 derrubou a monarquia?',a:'Proclamação da República',opts:['Golpe da Maioridade','Proclamação da República','Revolta Farroupilha','Guerra do Paraguai'],img:'https://upload.wikimedia.org/wikipedia/commons/1/18/Proclama%C3%A7%C3%A3o_da_Rep%C3%BAblica_do_Brasil.jpg'},
+      {q:'Qual guerra envolveu Brasil, Argentina e Uruguai contra o Paraguai?',a:'Guerra do Paraguai',opts:['Guerra do Paraguai','Guerra dos Farrapos','Guerra da Tríplice Aliança','Independência do Paraguai'],img:'https://upload.wikimedia.org/wikipedia/commons/2/26/Batalha_do_Avay.jpg'},
+      {q:'Quem foi a princesa responsável por assinar a Lei Áurea?',a:'Princesa Isabel',opts:['Princesa Isabel','Maria Leopoldina','Carlota Joaquina','Maria da Glória'],img:'https://upload.wikimedia.org/wikipedia/commons/8/8c/Princess_Isabel_of_Brazil.jpg'},
+      {q:'Qual movimento regional marcou resistência no Rio Grande do Sul?',a:'Revolução Farroupilha',opts:['Revolução Farroupilha','Cabanagem','Balaiada','Sabinada'],img:'https://upload.wikimedia.org/wikipedia/commons/2/25/Farrapos.jpg'}
+    ];
+
+    let questions=[...questionsBase];
+    let current=null;
+    let score=0;
+    let timeLeft=20;
+    let timerInterval;
+    let answered=false;
+
+    const qEl=document.getElementById('question');
+    const imgEl=document.getElementById('image');
+    const choicesEl=document.getElementById('choices');
+    const scoreEl=document.getElementById('score');
+    const timerEl=document.getElementById('timer');
+    const feedbackEl=document.getElementById('feedback');
+
+    function startTimer(){clearInterval(timerInterval);timerInterval=setInterval(()=>{timeLeft--;timerEl.textContent=timeLeft;if(timeLeft<=0){clearInterval(timerInterval);showFeedback(false,true)}},1000)}
+
+    function pickQuestion(){if(questions.length===0){endGame();return;}current=questions.splice(Math.floor(Math.random()*questions.length),1)[0];answered=false;renderQuestion();timeLeft=20;timerEl.textContent=timeLeft;startTimer();}
+
+    function renderQuestion(){qEl.textContent=current.q;imgEl.src=current.img;choicesEl.innerHTML='';shuffle([...current.opts]).forEach(opt=>{const btn=document.createElement('button');btn.className='choice';btn.textContent=opt;btn.onclick=()=>answer(opt,btn);choicesEl.appendChild(btn)});feedbackEl.textContent='';}
+
+    function answer(sel,btn){if(answered) return; answered=true; clearInterval(timerInterval);if(sel===current.a){score+=10;showFeedback(true);}else{score-=5;showFeedback(false);}scoreEl.textContent=score;setTimeout(pickQuestion,1500)}
+
+    function showFeedback(correct,time=false){if(time){feedbackEl.textContent='Tempo esgotado!';feedbackEl.className='result bad';}else if(correct){feedbackEl.textContent='Correto! +10';feedbackEl.className='result good';}else{feedbackEl.textContent='Errado! -5. Resposta: '+current.a;feedbackEl.className='result bad';}}
+
+    function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+
+    function endGame(){document.getElementById('quizBox').style.display='none';const final=document.getElementById('finalRanking');final.style.display='block';document.getElementById('finalScore').textContent=score;}
+
+    document.getElementById('nextBtn').onclick=()=>{pickQuestion()};
+    document.getElementById('restartBtn').onclick=()=>{score=0;scoreEl.textContent=score;questions=[...questionsBase];document.getElementById('quizBox').style.display='block';document.getElementById('finalRanking').style.display='none';pickQuestion()};
+    document.getElementById('showAnswerBtn').onclick=()=>{if(!answered){answered=true;score-=2;scoreEl.textContent=score;feedbackEl.textContent='Resposta: '+current.a+' (-2 pts)';feedbackEl.className='result bad';setTimeout(pickQuestion,1500)}};
+    document.getElementById('endBtn').onclick=()=>{endGame()};
+
+    const timeline=[
+      {label:'Maioridade (1840)',qIndex:0,resumo:'Em 1840, com apenas 14 anos, Dom Pedro II foi declarado maior de idade para assumir o trono.'},
+      {label:'Lei Eusébio (1850)',qIndex:4,resumo:'A Lei Eusébio de Queirós proibiu definitivamente o tráfico de escravos no Brasil.'},
+      {label:'Guerra do Paraguai (1864-70)',qIndex:9,resumo:'Conflito militar entre Paraguai e a Tríplice Aliança (Brasil, Argentina e Uruguai).'},
+      {label:'Lei Ventre Livre (1871)',qIndex:3,resumo:'Determinava que filhos de mulheres escravizadas nasciam livres.'},
+      {label:'Lei Áurea (1888)',qIndex:5,resumo:'Aboliu oficialmente a escravidão no Brasil, assinada pela Princesa Isabel.'},
+      {label:'República (1889)',qIndex:8,resumo:'Fim do Império e início da República, com a deposição de Dom Pedro II.'}
+    ];
+
+    const timelineEl=document.getElementById('timeline');
+    const summaryEl=document.getElementById('summary');
+    timeline.forEach(ev=>{const div=document.createElement('div');div.className='event';div.textContent=ev.label;div.onclick=()=>{current=questionsBase[ev.qIndex];answered=false;renderQuestion();summaryEl.textContent=ev.resumo};timelineEl.appendChild(div)});
+
+    pickQuestion();
+  </script>
+</body>
+</html>
